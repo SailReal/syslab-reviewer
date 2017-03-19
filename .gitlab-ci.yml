@@ -1,0 +1,61 @@
+image: python:latest
+
+stages:
+  - test
+  - build
+  - install
+
+lint:
+  stage: test
+  before_script:
+    - pip3 install flake8
+  script:
+    - ./setup.py lint
+
+type:
+  stage: test
+  before_script:
+    - pip3 install mypy
+  script:
+    - mypy htwg/ --ignore-missing-imports
+
+requires_min:
+  stage: test
+  artifacts:
+    when: always
+    paths:
+      - htmlcov/
+  cache:
+    paths:
+      - .eggs/
+  script:
+    - ./setup.py test --requires-min
+
+test:
+  stage: test
+  artifacts:
+    when: always
+    paths:
+      - htmlcov/
+  before_script:
+    - pip3 install pytest
+  script:
+    - ./setup.py test
+
+build:
+  stage: build
+  artifacts:
+    paths:
+      - dist/
+  before_script:
+    - pip3 install git-version
+  script:
+    - ./setup.py sdist
+
+install:
+  stage: install
+  dependencies:
+    - build
+  script:
+    - pip3 install dist/htwg-syslab-reviewer-*.tar.gz --upgrade
+    - echo -e 'hello\nquit' > syslab-reviewer
