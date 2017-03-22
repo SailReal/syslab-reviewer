@@ -96,7 +96,7 @@ def github_course(course, g, t):
             # pr_issue = repo.get_issue(pr.number)
 
             depth = 1
-            iprint('pr {}: {} (created: {}, updated: {}, assignees: {})'.format(t.bold(str(pr.number)), pr.title, pr.created_at,pr.updated_at, ', '.join(pr.assignees)), depth)
+            iprint('pr {}: {} (created: {}, updated: {}, assignees: {})'.format(t.bold(str(pr.number)), pr.title, pr.created_at,pr.updated_at, ', '.join([t.bold(assignee.login) for assignee in pr.assignees])), depth)
             depth = 2
             iprint('{}'.format(pr.html_url), depth)
             iprint('state: {}, merge status: {}'.format(t.bold(pr.state), pr.mergeable_state), depth)
