@@ -3,7 +3,6 @@
 import re
 import warnings
 
-from cmd import Cmd
 from os.path import expanduser, dirname
 from pathlib import Path
 from textwrap import indent
@@ -31,27 +30,11 @@ def read_config(file_path: Path) -> Dict[str, Any]:
     return config
 
 
-def iprint(text, depth=1, prefix=' '*4):
-    print(indent(text, prefix*depth))
+def iprint(text, depth=1, prefix=' ' * 4):
+    print(indent(text, prefix * depth))
 
 
-class MyPrompt(Cmd):
-
-    def do_hello(self, args):
-        """Says hello. If you provide a name, it will greet you with it."""
-        if len(args) == 0:
-            name = 'stranger'
-        else:
-            name = args
-        print('Hello, %s' % name)
-
-    def do_quit(self, args):
-        """Quits the program."""
-        print('Quitting.')
-        raise SystemExit
-
-
-def github(t):
+def github(t: Terminal):
     config = read_config(Path(expanduser('~')) / '.syslab-reviewer.yml')
     g = Github(config['github']['token'])
 
@@ -136,9 +119,6 @@ def main():
 
     github(term)
 
-    # prompt = MyPrompt()
-    # prompt.prompt = '> '
-    # prompt.cmdloop('Starting prompt...')
 
 if __name__ == '__main__':
     main()
