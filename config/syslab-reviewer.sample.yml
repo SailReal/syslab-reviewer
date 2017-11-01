@@ -2,13 +2,9 @@ github:
   token: your_token
 
 courses:
-  bsys:
-    name: BSYS
+  - name: BSYS
     organization: htwg-syslab-bsys
     repo_regex: bsys-(ss|ws)\d{2}-grp\d+
-    repo_homework: bsys-(ss|ws)\d{2}-homework
-  syso:
-    name: SYSO
+  - name: SYSO
     organization: htwg-syslab-syso
     repo_regex: syso-(ss|ws)\d{2}-grp\d+
-    repo_homework: syso-(ss|ws)\d{2}-homework

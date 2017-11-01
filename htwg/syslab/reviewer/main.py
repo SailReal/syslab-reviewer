@@ -1,20 +1,29 @@
 #!/usr/bin/env python3
 
+import re
+import warnings
+
 from cmd import Cmd
-from os.path import expanduser, join
+from os.path import expanduser, dirname
+from pathlib import Path
 from textwrap import indent
 from typing import Dict, Any
 
 from blessings import Terminal
 from github import Github
+from pykwalify.core import Core
 from ruamel import yaml
-import re
+
+CONFIG_SCHEMA_FILEPATH = Path(dirname(__file__)) / '..' / '..' / '..' / 'config' / 'syslab-reviewer.schema.yml'
+
+# ignore ruamel warning
+warnings.simplefilter('ignore', yaml.error.UnsafeLoaderWarning)
 
 
-def read_config(file_path: str) -> Dict[str, Any]:
+def read_config(file_path: Path) -> Dict[str, Any]:
     # validate
-    # c = Core(source_file=file_path, schema_files=[CONFIG_SCHEMA_FILEPATH])
-    # c.validate(raise_exception=True)
+    c = Core(source_file=str(file_path), schema_files=[str(CONFIG_SCHEMA_FILEPATH)])
+    c.validate(raise_exception=True)
 
     with open(file_path) as f:
         config = yaml.safe_load(f)
@@ -43,7 +52,7 @@ class MyPrompt(Cmd):
 
 
 def github(t):
-    config = read_config(join(expanduser('~'), '.syslab-reviewer.yml'))
+    config = read_config(Path(expanduser('~')) / '.syslab-reviewer.yml')
     g = Github(config['github']['token'])
 
     user = g.get_user()
@@ -51,16 +60,15 @@ def github(t):
     print('You are logged in as: {} ({})'.format(user.name, t.bold(user.login)))
 
     courses = config['courses']
-    print('courses:\n', ' '.join(courses.keys()))
+    print('courses:\n', ', '.join([course['name'] for course in courses]))
 
-    for course_name, course in courses.items():
-        print('Course: {} ({})'.format(course_name, course['name']))
+    for course in courses:
+        print('Course: {}'.format(course['name']))
         github_course(course, g, t)
 
 
 def github_course(course, g, t):
     repo_pattern = re.compile(course['repo_regex'])
-    # repo_hw_pattern = re.compile(course['repo_homework'])
 
     org = g.get_organization(course['organization'])
     print(org)
