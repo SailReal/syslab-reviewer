@@ -1,0 +1,32 @@
+name: syslab-reviewer config file
+type: map
+mapping:
+  github:
+    name: GitHub access config
+    type: map
+    required: true
+    mapping:
+      token:
+        type: str
+        required: true
+
+  courses:
+    name: List of courses
+    type: seq
+    required: true
+    sequence:
+    - name: Course
+      type: map
+      mapping:
+        name:
+          name: Course name
+          type: str
+          required: true
+        organization:
+          name: GitHub organization url
+          type: str
+          required: true
+        repo_regex:
+          name: Repository filter regex
+          type: str
+          required: true
