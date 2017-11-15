@@ -8,10 +8,13 @@ from pathlib import Path
 from textwrap import indent
 from typing import Dict, Any
 
-from blessings import Terminal
+from colorama import init, Style
 from github import Github
 from pykwalify.core import Core
 from ruamel import yaml
+
+BOLD = Style.BRIGHT
+RESET = Style.RESET_ALL
 
 CONFIG_SCHEMA_FILEPATH = Path(dirname(__file__)) / '..' / '..' / '..' / 'config' / 'syslab-reviewer.schema.yml'
 
@@ -34,23 +37,23 @@ def iprint(text, depth=1, prefix=' ' * 4):
     print(indent(text, prefix * depth))
 
 
-def github(t: Terminal):
+def github():
     config = read_config(Path(expanduser('~')) / '.syslab-reviewer.yml')
     g = Github(config['github']['token'])
 
     user = g.get_user()
     print(user)
-    print('You are logged in as: {} ({})'.format(user.name, t.bold(user.login)))
+    print('You are logged in as: {} ({})'.format(user.name, BOLD + user.login + RESET))
 
     courses = config['courses']
     print('courses:\n', ', '.join([course['name'] for course in courses]))
 
     for course in courses:
         print('Course: {}'.format(course['name']))
-        github_course(course, g, t)
+        github_course(course, g)
 
 
-def github_course(course: Dict[str, Any], g: Github, t: Terminal):
+def github_course(course: Dict[str, Any], g: Github):
     repo_pattern = re.compile(course['repo_regex'])
 
     org = g.get_organization(course['organization'])
@@ -88,16 +91,16 @@ def github_course(course: Dict[str, Any], g: Github, t: Terminal):
             issue_template = '{issue_type} {number}: {title}' \
                              ' (created: {created_at}, labels: [{labels}], assignees: [{assignees}])'
             iprint(issue_template.format(
-                issue_type=issue_type, number=t.bold(str(issue.number)),
+                issue_type=issue_type, number=BOLD + str(issue.number) + RESET,
                 title=issue.title, created_at=issue.created_at,
-                labels=', '.join([t.bold(label.name) for label in issue.labels]),
-                assignees=', '.join([t.bold(assignee.login) for assignee in issue.assignees])), depth)
+                labels=', '.join([BOLD + label.name + RESET for label in issue.labels]),
+                assignees=', '.join([BOLD + assignee.login + RESET for assignee in issue.assignees])), depth)
 
             depth = 2
             iprint('{}'.format(issue.html_url), depth)
 
             if pr:
-                iprint('state: {}, merge status: {}'.format(t.bold(pr.state), pr.mergeable_state), depth)
+                iprint('state: {}, merge status: {}'.format(BOLD + pr.state + RESET, pr.mergeable_state), depth)
                 iprint('+ {}, - {} ({} files changed)'.format(pr.additions, pr.deletions, pr.changed_files), depth)
 
             # # details
@@ -111,17 +114,13 @@ def github_course(course: Dict[str, Any], g: Github, t: Terminal):
             #     iprint('{}'.format(comment.path))
             #     iprint('{}'.format(comment.diff_hunk))
             #     depth += 1
-            #     iprint('{}: {}'.format(t.bold(comment.user.login), comment.body), depth)
+            #     iprint('{}: {}'.format(BOLD + comment.user.login + RESET, comment.body), depth)
             #     iprint('')
 
 
 def main():
-    term = Terminal()
-
-    # with term.fullscreen():
-    #     github(term)
-
-    github(term)
+    init()
+    github()
 
 
 if __name__ == '__main__':
